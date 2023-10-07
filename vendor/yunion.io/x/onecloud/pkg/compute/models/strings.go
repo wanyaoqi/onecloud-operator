@@ -12,4 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package compute
+package models
+
+import "fmt"
+
+func (h *SHost) String() string {
+	return fmt.Sprintf("%s(%s,%s)", h.Name, h.AccessIp, h.Id)
+}
+
+func (n *SNetwork) String() string {
+	return fmt.Sprintf("%s(%s/%d)", n.Name, n.GuestIpStart, n.GuestIpMask)
+}
+
+func (netif *SNetInterface) String() string {
+	return fmt.Sprintf("%s(%d)", netif.Mac, netif.VlanId)
+}

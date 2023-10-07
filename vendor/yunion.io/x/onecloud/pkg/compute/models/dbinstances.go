@@ -1211,7 +1211,7 @@ func (self *SDBInstance) Delete(ctx context.Context, userCred mcclient.TokenCred
 }
 
 func (self *SDBInstance) RealDelete(ctx context.Context, userCred mcclient.TokenCredential) error {
-	return self.SVirtualResourceBase.Delete(ctx, userCred)
+	return self.purge(ctx, userCred)
 }
 
 func (self *SDBInstance) GetDBInstanceParameters() ([]SDBInstanceParameter, error) {
@@ -1505,7 +1505,7 @@ func (manager *SDBInstanceManager) SyncDBInstances(
 }
 
 func (self *SDBInstance) syncRemoveCloudDBInstance(ctx context.Context, userCred mcclient.TokenCredential) error {
-	err := self.Purge(ctx, userCred)
+	err := self.RealDelete(ctx, userCred)
 	if err != nil {
 		return err
 	}
@@ -1672,6 +1672,9 @@ func (self *SDBInstance) SyncWithCloudDBInstance(ctx context.Context, userCred m
 		self.Category = ext.GetCategory()
 		self.Status = ext.GetStatus()
 		self.Port = ext.GetPort()
+		if len(ext.GetDescription()) > 0 {
+			self.Description = ext.GetDescription()
+		}
 		if iops := ext.GetIops(); iops > 0 {
 			self.Iops = iops
 		}
@@ -1775,6 +1778,7 @@ func (manager *SDBInstanceManager) newFromCloudDBInstance(ctx context.Context, u
 	instance.ConnectionStr = extInstance.GetConnectionStr()
 	instance.StorageType = extInstance.GetStorageType()
 	instance.InternalConnectionStr = extInstance.GetInternalConnectionStr()
+	instance.Description = extInstance.GetDescription()
 
 	instance.MaintainTime = extInstance.GetMaintainTime()
 	instance.SetZoneIds(extInstance)
@@ -2159,4 +2163,10 @@ func (self *SDBInstance) GetExpiredAt() time.Time {
 
 func (db *SDBInstance) PostUpdate(ctx context.Context, userCred mcclient.TokenCredential, query jsonutils.JSONObject, data jsonutils.JSONObject) {
 	db.SVirtualResourceBase.PostUpdate(ctx, userCred, query, data)
+	if len(db.ExternalId) > 0 && (data.Contains("name") || data.Contains("description")) {
+		err := db.StartRemoteUpdateTask(ctx, userCred, false, "")
+		if err != nil {
+			log.Errorf("StartRemoteUpdateTask fail: %s", err)
+		}
+	}
 }

@@ -12,23 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package compute
+package stringutils2
 
 import (
-	"yunion.io/x/onecloud/pkg/mcclient/modulebase"
-	"yunion.io/x/onecloud/pkg/mcclient/modules"
+	"crypto/sha256"
+	"fmt"
+	"strings"
 )
 
-var (
-	Hostwires modulebase.JointResourceManager
-)
-
-func init() {
-	Hostwires = modules.NewJointComputeManager("hostwire", "hostwires",
-		[]string{"Host_ID", "Host", "Wire_ID", "Wire",
-			"Bridge", "Interface", "Mac_addr", "is_master"},
-		[]string{},
-		&Hosts,
-		&Wires)
-	modules.RegisterCompute(&Hostwires)
+func HashIdsMac(ids ...string) string {
+	h := sha256.New()
+	for _, id := range ids {
+		h.Write([]byte(id))
+	}
+	sum := h.Sum(nil)
+	hexStr := make([]string, 6)
+	hexStr[0] = "ff"
+	for i := 1; i < 6; i++ {
+		hexStr[i] = fmt.Sprintf("%02x", sum[i])
+	}
+	return strings.Join(hexStr, ":")
 }
