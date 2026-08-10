@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"yunion.io/x/onecloud-operator/pkg/apis/onecloud/v1alpha1"
 	"yunion.io/x/onecloud-operator/pkg/controller"
 	"yunion.io/x/onecloud-operator/pkg/manager"
@@ -27,6 +26,7 @@ func (m *cloudmonManager) getProductVersions() []v1alpha1.ProductVersion {
 		v1alpha1.ProductVersionFullStack,
 		v1alpha1.ProductVersionCMP,
 		v1alpha1.ProductVersionEdge,
+		v1alpha1.ProductVersionLightEdge,
 	}
 }
 
